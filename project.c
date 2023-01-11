@@ -74,10 +74,10 @@ void rr();
 int process_counter(struct node *);
 struct node *swap_nodes(struct node *, struct node *);
 void bubble_sort(struct node **, int, char *);
-bool is_all_done(struct node *);
-bool is_previous_ones_done(struct node *, int);
-struct node *find_least_left(struct node *, int);
-struct node *find_least_priority(struct node *, int);
+bool allFinished(struct node *);
+bool prevFinished(struct node *, int);
+struct node *timeLeft(struct node *, int);
+struct node *priority(struct node *, int);
 
 int main(int argc, char *argv[])
 {
@@ -706,9 +706,9 @@ void sjf_p()
     bubble_sort(&clone_header, number_of_process, "SJF");
     temp = temp1 = temp2 = clone_header;
 
-    while (!is_all_done(clone_header))
+    while (!allFinished(clone_header))
     {
-        struct node *in_cpu_node = find_least_left(clone_header, count);
+        struct node *in_cpu_node = timeLeft(clone_header, count);
         bool is_found = true;
         if (in_cpu_node == NULL)
         {
@@ -721,7 +721,7 @@ void sjf_p()
                     {
                         is_found = false;
                         count = temp->arrival_time;
-                        in_cpu_node = find_least_left(clone_header, count);
+                        in_cpu_node = timeLeft(clone_header, count);
                         in_cpu_node->how_much_left--;
                         count++;
                         if (in_cpu_node->how_much_left == 0)
@@ -893,9 +893,9 @@ void ps_p()
     bubble_sort(&clone_header, number_of_process, "PS");
     temp = temp1 = temp2 = clone_header;
 
-    while (!is_all_done(clone_header))
+    while (!allFinished(clone_header))
     {
-        struct node *in_cpu_node = find_least_priority(clone_header, count);
+        struct node *in_cpu_node = priority(clone_header, count);
         bool is_found = true;
 
         if (in_cpu_node == NULL)
@@ -909,7 +909,7 @@ void ps_p()
                     {
                         is_found = false;
                         count = temp->arrival_time;
-                        in_cpu_node = find_least_priority(clone_header, count);
+                        in_cpu_node = priority(clone_header, count);
                         in_cpu_node->how_much_left--;
                         count++;
                         if (in_cpu_node->how_much_left == 0)
@@ -1008,7 +1008,7 @@ void rr()
         temp3 = temp3->next;
     }
 
-    while (!is_all_done(clone_header))
+    while (!allFinished(clone_header))
     {
         temp1 = clone_header;
         is_first = true;
@@ -1062,7 +1062,7 @@ void rr()
 
                 else
                 {
-                    previous_ones_done = is_previous_ones_done(clone_header, count);
+                    previous_ones_done = prevFinished(clone_header, count);
                     if (previous_ones_done)
                     {
                         count = temp1->arrival_time;
@@ -1121,4 +1121,216 @@ void rr()
     {
         clone_header = delete_front(clone_header);
     }
+}
+/////////////////////////////////////////////////////
+
+int process_counter(struct node *header)
+{
+    struct node *temp = header;
+    int counter = 0;
+    while (temp != NULL)
+    {
+        counter++;
+        temp = temp->next;
+    }
+
+    return counter;
+}
+
+// Swapping nodes (Function)
+struct node *swap_nodes(struct node *temp1, struct node *temp2)
+{
+    struct node *tmp = temp2->next;
+    temp2->next = temp1;
+    temp1->next = tmp;
+    return temp2;
+}
+
+void bubble_sort(struct node **header, int counter, char *sort_mode)
+{
+    struct node **header_temp;
+    int swapped, max_at = 0;
+    int i, j;
+
+    for (i = 0; i < counter; i++)
+    {
+        header_temp = header;
+        swapped = 0;
+        max_at = 0;
+
+        for (j = 0; j < counter - 1 - i; j++)
+        {
+            struct node *temp1 = *header_temp;
+            struct node *temp2 = temp1->next;
+
+            if (!strcmp(sort_mode, "PID"))
+            {
+                if (temp1->process_id >= temp2->process_id)
+                {
+                    *header_temp = swap_nodes(temp1, temp2);
+                    swapped = 1;
+                }
+                header_temp = &(*header_temp)->next;
+            }
+
+            else if (!strcmp(sort_mode, "AT"))
+            {
+                if (temp1->arrival_time > temp2->arrival_time)
+                {
+                    *header_temp = swap_nodes(temp1, temp2);
+                    swapped = 1;
+                }
+
+                else if (temp1->arrival_time == temp2->arrival_time)
+                {
+                    if (temp1->process_id > temp2->process_id)
+                    {
+                        *header_temp = swap_nodes(temp1, temp2);
+                        swapped = 1;
+                    }
+                }
+                header_temp = &(*header_temp)->next;
+            }
+
+            else if (!strcmp(sort_mode, "SJF"))
+            {
+                if (temp1->arrival_time <= max_at && temp2->arrival_time <= max_at)
+                {
+                    if (temp1->burst_time > temp2->burst_time)
+                    {
+                        *header_temp = swap_nodes(temp1, temp2);
+                        swapped = 1;
+                    }
+
+                    else if (temp1->burst_time == temp2->burst_time)
+                    {
+                        if (temp1->process_id > temp2->process_id)
+                        {
+                            *header_temp = swap_nodes(temp1, temp2);
+                            swapped = 1;
+                        }
+                    }
+                    max_at += (*header_temp)->burst_time;
+                }
+                else
+                {
+                    if (temp2->arrival_time > max_at)
+                        max_at = temp2->arrival_time;
+                }
+
+                header_temp = &(*header_temp)->next;
+            }
+
+            else if (!strcmp(sort_mode, "PS"))
+            {
+                if (temp1->arrival_time <= max_at && temp2->arrival_time <= max_at)
+                {
+                    if (temp1->priority > temp2->priority)
+                    {
+                        *header_temp = swap_nodes(temp1, temp2);
+                        swapped = 1;
+                    }
+
+                    else if (temp1->priority == temp2->priority)
+                    {
+                        if (temp1->process_id > temp2->process_id)
+                        {
+                            *header_temp = swap_nodes(temp1, temp2);
+                            swapped = 1;
+                        }
+                    }
+                    max_at += (*header_temp)->burst_time;
+                }
+                else
+                {
+                    if (temp2->arrival_time > max_at)
+                        max_at = temp2->arrival_time;
+                }
+
+                header_temp = &(*header_temp)->next;
+            }
+        }
+
+        if (swapped == 0)
+        {
+            break;
+        }
+    }
+}
+
+bool allFinished(struct node *header)
+{
+    bool done = true;
+    while (header != NULL)
+    {
+        if (!header->is_terminated)
+            done = false;
+        header = header->next;
+    }
+
+    return done;
+}
+
+bool prevFinished(struct node *header, int at_limit)
+{
+    bool done = true;
+    while (header != NULL)
+    {
+        if (header->arrival_time <= at_limit)
+        {
+            if (!header->is_terminated)
+            {
+                done = false;
+            }
+        }
+        header = header->next;
+    }
+
+    return done;
+}
+
+struct node *timeLeft(struct node *header, int at_limit)
+{
+    struct node *temp = NULL;
+    int x = INT_MAX;
+    while (header != NULL)
+    {
+        if (!header->is_terminated)
+        {
+            if (header->arrival_time <= at_limit)
+            {
+                if (header->how_much_left < x)
+                {
+                    temp = header;
+                    x = header->how_much_left;
+                }
+            }
+        }
+        header = header->next;
+    }
+
+    return temp;
+}
+
+struct node *priority(struct node *header, int at_limit)
+{
+    struct node *temp = NULL;
+    int x = INT_MAX;
+    while (header != NULL)
+    {
+        if (!header->is_terminated)
+        {
+            if (header->arrival_time <= at_limit)
+            {
+                if (header->priority < x)
+                {
+                    temp = header;
+                    x = header->priority;
+                }
+            }
+        }
+        header = header->next;
+    }
+
+    return temp;
 }
