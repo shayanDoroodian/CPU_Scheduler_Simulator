@@ -539,7 +539,7 @@ void fcfs()
 {
     struct node *clone_header = clone_LL(header_original);
     struct node *temp1, *temp2, *t;
-    int program_counter = 0;
+    int count = 0;
     float average_wait = 0.0f;
     int number_of_process = process_counter(clone_header);
     bool is_first = true;
@@ -553,10 +553,10 @@ void fcfs()
 
     while (temp1 != NULL)
     {
-        if (temp1->arrival_time <= program_counter)
+        if (temp1->arrival_time <= count)
         {
-            program_counter += temp1->burst_time;
-            temp1->turnaround_time = program_counter;
+            count += temp1->burst_time;
+            temp1->turnaround_time = count;
             if (is_first)
             {
                 if ((temp1->waiting_time = temp1->turnaround_time - temp1->burst_time) < 0)
@@ -572,9 +572,9 @@ void fcfs()
 
         else
         {
-            program_counter = temp1->arrival_time;
-            program_counter += temp1->burst_time;
-            temp1->turnaround_time = program_counter;
+            count = temp1->arrival_time;
+            count += temp1->burst_time;
+            temp1->turnaround_time = count;
             if ((temp1->waiting_time = temp1->turnaround_time - temp1->burst_time - temp1->arrival_time) < 0)
                 temp1->waiting_time = 0;
         }
@@ -619,7 +619,7 @@ void sjf_np()
 
     struct node *clone_header = clone_LL(header_original);
     struct node *temp, *temp1, *t;
-    int program_counter = 0;
+    int count = 0;
     float average_wait = 0.0f;
     int number_of_process = process_counter(clone_header);
     bubble_sort(&clone_header, number_of_process, "AT");
@@ -634,10 +634,10 @@ void sjf_np()
     bool is_first = true;
     while (temp != NULL)
     {
-        if (temp->arrival_time <= program_counter)
+        if (temp->arrival_time <= count)
         {
-            program_counter += temp->burst_time;
-            temp->turnaround_time = program_counter;
+            count += temp->burst_time;
+            temp->turnaround_time = count;
             if (is_first)
             {
                 if ((temp->waiting_time = temp->turnaround_time - temp->burst_time) < 0)
@@ -653,9 +653,9 @@ void sjf_np()
 
         else
         {
-            program_counter = temp->arrival_time;
-            program_counter += temp->burst_time;
-            temp->turnaround_time = program_counter;
+            count = temp->arrival_time;
+            count += temp->burst_time;
+            temp->turnaround_time = count;
             if ((temp->waiting_time = temp->turnaround_time - temp->burst_time - temp->arrival_time) < 0)
                 temp->waiting_time = 0;
         }
@@ -699,7 +699,7 @@ void sjf_p()
 {
     struct node *clone_header = clone_LL(header_original);
     struct node *temp, *temp1, *temp2;
-    int program_counter = 0;
+    int count = 0;
     float average_wait = 0.0f;
     int number_of_process = process_counter(clone_header);
     bubble_sort(&clone_header, number_of_process, "AT");
@@ -708,7 +708,7 @@ void sjf_p()
 
     while (!is_all_done(clone_header))
     {
-        struct node *in_cpu_node = find_least_left(clone_header, program_counter);
+        struct node *in_cpu_node = find_least_left(clone_header, count);
         bool is_found = true;
         if (in_cpu_node == NULL)
         {
@@ -717,16 +717,16 @@ void sjf_p()
             {
                 if (!temp->is_terminated)
                 {
-                    if (temp->arrival_time > program_counter && is_found)
+                    if (temp->arrival_time > count && is_found)
                     {
                         is_found = false;
-                        program_counter = temp->arrival_time;
-                        in_cpu_node = find_least_left(clone_header, program_counter);
+                        count = temp->arrival_time;
+                        in_cpu_node = find_least_left(clone_header, count);
                         in_cpu_node->how_much_left--;
-                        program_counter++;
+                        count++;
                         if (in_cpu_node->how_much_left == 0)
                         {
-                            in_cpu_node->turnaround_time = program_counter;
+                            in_cpu_node->turnaround_time = count;
                             in_cpu_node->is_terminated = true;
                         }
                     }
@@ -737,12 +737,12 @@ void sjf_p()
         }
         else
         {
-            program_counter++;
+            count++;
             in_cpu_node->how_much_left--;
 
             if (in_cpu_node->how_much_left == 0)
             {
-                in_cpu_node->turnaround_time = program_counter;
+                in_cpu_node->turnaround_time = count;
                 in_cpu_node->is_terminated = true;
             }
         }
@@ -796,6 +796,327 @@ void sjf_p()
     }
     printf("%s", buff);
 
+    while (clone_header != NULL)
+    {
+        clone_header = delete_front(clone_header);
+    }
+}
+
+void ps_np()
+{
+    struct node *clone_header = clone_LL(header_original);
+    struct node *temp, *temp1, *t;
+    int count = 0;
+    float average_wait = 0.0f;
+    int number_of_process = process_counter(clone_header);
+    bubble_sort(&clone_header, number_of_process, "AT");
+    bubble_sort(&clone_header, number_of_process, "PS");
+    temp = clone_LL(clone_header);
+    while (clone_header != NULL)
+    {
+        clone_header = delete_front(clone_header);
+    }
+    t = temp1 = temp;
+
+    bool is_first = true;
+    while (temp != NULL)
+    {
+        if (temp->arrival_time <= count)
+        {
+            count += temp->burst_time;
+            temp->turnaround_time = count;
+            if (is_first)
+            {
+                if ((temp->waiting_time = temp->turnaround_time - temp->burst_time) < 0)
+                    temp->waiting_time = 0;
+                is_first = false;
+            }
+            else
+            {
+                if ((temp->waiting_time = temp->turnaround_time - temp->burst_time - temp->arrival_time) < 0)
+                    temp->waiting_time = 0;
+            }
+        }
+
+        else
+        {
+            count = temp->arrival_time;
+            count += temp->burst_time;
+            temp->turnaround_time = count;
+            if ((temp->waiting_time = temp->turnaround_time - temp->burst_time - temp->arrival_time) < 0)
+                temp->waiting_time = 0;
+        }
+
+        temp = temp->next;
+    }
+
+    strcpy(buff, "");
+    bubble_sort(&temp1, number_of_process, "PID");
+    system("clear");
+    strcat(buff, "Scheduling Method: Priority Scheduling (Non-Preemtive)\n");
+    strcat(buff, "Process Waiting Times:\n");
+    while (temp1 != NULL)
+    {
+        int pid = temp1->process_id;
+        int wait = temp1->waiting_time;
+        average_wait += wait;
+        char buff_1[20] = "";
+        snprintf(buff_1, 19, "PS%d: %d ms\n", pid, wait);
+        strcat(buff, buff_1);
+        temp1 = temp1->next;
+    }
+    average_wait /= number_of_process;
+    char buff_2[40];
+    snprintf(buff_2, 39, "Average Waiting Time: %.3f ms\n\n", average_wait);
+    strcat(buff, buff_2);
+    if (firstPsNp)
+    {
+        strcat(buffer_output, buff);
+        firstPsNp = false;
+    }
+    printf("%s", buff);
+
+    while (t != NULL)
+    {
+        t = delete_front(t);
+    }
+}
+
+void ps_p()
+{
+    struct node *clone_header = clone_LL(header_original);
+    struct node *temp, *temp1, *temp2;
+    int count = 0;
+    float average_wait = 0.0f;
+    int number_of_process = process_counter(clone_header);
+    bubble_sort(&clone_header, number_of_process, "AT");
+    bubble_sort(&clone_header, number_of_process, "PS");
+    temp = temp1 = temp2 = clone_header;
+
+    while (!is_all_done(clone_header))
+    {
+        struct node *in_cpu_node = find_least_priority(clone_header, count);
+        bool is_found = true;
+
+        if (in_cpu_node == NULL)
+        {
+            temp = clone_header;
+            while (temp != NULL)
+            {
+                if (!temp->is_terminated)
+                {
+                    if (temp->arrival_time > count && is_found)
+                    {
+                        is_found = false;
+                        count = temp->arrival_time;
+                        in_cpu_node = find_least_priority(clone_header, count);
+                        in_cpu_node->how_much_left--;
+                        count++;
+                        if (in_cpu_node->how_much_left == 0)
+                        {
+                            in_cpu_node->turnaround_time = count;
+                            in_cpu_node->is_terminated = true;
+                        }
+                    }
+                }
+
+                temp = temp->next;
+            }
+        }
+
+        else
+        {
+            count++;
+            in_cpu_node->how_much_left--;
+
+            if (in_cpu_node->how_much_left == 0)
+            {
+                in_cpu_node->turnaround_time = count;
+                in_cpu_node->is_terminated = true;
+            }
+        }
+    }
+
+    bool is_first = true;
+    while (temp1 != NULL)
+    {
+        if (is_first)
+        {
+            temp1->waiting_time = temp1->turnaround_time - temp1->burst_time;
+            if (temp1->waiting_time < 0)
+                temp1->waiting_time = 0;
+
+            is_first = false;
+        }
+
+        else
+        {
+            temp1->waiting_time = temp1->turnaround_time - temp1->burst_time - temp1->arrival_time;
+            if (temp1->waiting_time < 0)
+                temp1->waiting_time = 0;
+        }
+        temp1 = temp1->next;
+    }
+
+    strcpy(buff, "");
+    bubble_sort(&temp2, number_of_process, "PID");
+    system("clear");
+    strcat(buff, "Scheduling Method: Priority Scheduling (Preemtive)\n");
+    strcat(buff, "Process Waiting Times:\n");
+    while (temp2 != NULL)
+    {
+        int pid = temp2->process_id;
+        int wait = temp2->waiting_time;
+        average_wait += wait;
+        char buff_1[20] = "";
+        snprintf(buff_1, 19, "PS%d: %d ms\n", pid, wait);
+        strcat(buff, buff_1);
+        temp2 = temp2->next;
+    }
+    average_wait /= number_of_process;
+    char buff_2[40];
+    snprintf(buff_2, 39, "Average Waiting Time: %.3f ms\n\n", average_wait);
+    strcat(buff, buff_2);
+    if (firstPsP)
+    {
+        strcat(buffer_output, buff);
+        firstPsP = false;
+    }
+    printf("%s", buff);
+    while (clone_header != NULL)
+    {
+        clone_header = delete_front(clone_header);
+    }
+}
+
+void rr()
+{
+    struct node *clone_header = clone_LL(header_original);
+    struct node *temp1, *temp2, *temp3;
+    int count = 0;
+    float average_wait = 0.0f;
+    int number_of_process = process_counter(clone_header);
+    bool is_first = true;
+    bool previous_ones_done = false;
+    bubble_sort(&clone_header, number_of_process, "AT");
+    temp1 = temp2 = temp3 = clone_header;
+
+    while (temp3 != NULL)
+    {
+        temp3->time_slices = temp3->burst_time / qTime;
+        temp3->last_slice_burst = temp3->burst_time % qTime;
+        temp3 = temp3->next;
+    }
+
+    while (!is_all_done(clone_header))
+    {
+        temp1 = clone_header;
+        is_first = true;
+        while (temp1 != NULL)
+        {
+            if (!temp1->is_terminated)
+            {
+                if (temp1->arrival_time <= count)
+                {
+                    if (is_first)
+                    {
+                        if (temp1->time_slices == 0)
+                        {
+                            count += temp1->last_slice_burst;
+                            if (temp1->last_slice_burst != 0)
+                                temp1->turnaround_time = count;
+                            temp1->waiting_time = temp1->turnaround_time - temp1->burst_time;
+                            if (temp1->waiting_time < 0)
+                                temp1->waiting_time = 0;
+                            temp1->is_terminated = true;
+                        }
+                        else
+                        {
+                            count += qTime;
+                            temp1->turnaround_time = count;
+                            temp1->time_slices--;
+                        }
+                        is_first = false;
+                    }
+
+                    else
+                    {
+                        if (temp1->time_slices == 0)
+                        {
+                            count += temp1->last_slice_burst;
+                            if (temp1->last_slice_burst != 0)
+                                temp1->turnaround_time = count;
+                            temp1->waiting_time = temp1->turnaround_time - temp1->burst_time - temp1->arrival_time;
+                            if (temp1->waiting_time < 0)
+                                temp1->waiting_time = 0;
+                            temp1->is_terminated = true;
+                        }
+                        else
+                        {
+                            count += qTime;
+                            temp1->turnaround_time = count;
+                            temp1->time_slices--;
+                        }
+                    }
+                }
+
+                else
+                {
+                    previous_ones_done = is_previous_ones_done(clone_header, count);
+                    if (previous_ones_done)
+                    {
+                        count = temp1->arrival_time;
+                        if (temp1->time_slices == 0)
+                        {
+                            count += temp1->last_slice_burst;
+                            if (temp1->last_slice_burst != 0)
+                                temp1->turnaround_time = count;
+                            temp1->waiting_time = temp1->turnaround_time - temp1->burst_time - temp1->arrival_time;
+                            if (temp1->waiting_time < 0)
+                                temp1->waiting_time = 0;
+                            temp1->is_terminated = true;
+                        }
+                        else
+                        {
+                            count += qTime;
+                            temp1->turnaround_time = count;
+                            temp1->time_slices--;
+                        }
+                    }
+                }
+            }
+
+            is_first = false;
+            temp1 = temp1->next;
+        }
+    }
+
+    strcpy(buff, "");
+    bubble_sort(&clone_header, number_of_process, "PID");
+    temp2 = clone_header;
+    system("clear");
+    snprintf(buff, 999, "Scheduling Method: Round-Robin (Time quantum: %d)\n", qTime);
+    strcat(buff, "Process Waiting Times:\n");
+    while (temp2 != NULL)
+    {
+        int pid = temp2->process_id;
+        int wait = temp2->waiting_time;
+        average_wait += wait;
+        char buff_1[20];
+        snprintf(buff_1, 19, "PS%d: %d ms\n", pid, wait);
+        strcat(buff, buff_1);
+        temp2 = temp2->next;
+    }
+    average_wait /= number_of_process;
+    char buff_2[40];
+    snprintf(buff_2, 39, "Average Waiting Time: %.3f ms\n\n", average_wait);
+    strcat(buff, buff_2);
+    if (firstRR)
+    {
+        strcat(buffer_output, buff);
+        firstRR = false;
+    }
+    printf("%s", buff);
     while (clone_header != NULL)
     {
         clone_header = delete_front(clone_header);
