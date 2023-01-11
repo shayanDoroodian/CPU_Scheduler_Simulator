@@ -216,3 +216,192 @@ void useOutPut()
     printf("Use: %s -f <input filename> -o <output filename>\n", exe);
     exit(1);
 }
+
+void menu()
+{
+    while (true)
+    {
+        system("clear");
+        int option;
+        printf("\t\tscheduler simulation\n");
+
+        switch (method)
+        {
+        case 0:
+            printf("1 - Scheduling Method (NONE)\n");
+            break;
+        case 1:
+            printf("1 - Scheduling Method (FCFS)\n");
+            break;
+        case 2:
+            printf("1 - Scheduling Method (SJF)\n");
+            break;
+        case 3:
+            printf("1 - Scheduling Method (PS)\n");
+            break;
+        case 4:
+            printf("1 - Scheduling Method (RR)\n");
+            break;
+        default:
+            printf("1 - Scheduling Method (NONE)\n");
+            break;
+        }
+
+        switch (mode)
+        {
+        case 0:
+            printf("2 - Preemtive Mode (OFF)\n");
+            break;
+        case 1:
+            printf("2 - Preemtive Mode (ON)\n");
+            break;
+        default:
+            printf("2 - Preemtive Mode (OFF)\n");
+            break;
+        }
+
+        printf("3 - Result\n");
+        printf("4 - End \n");
+        printf("Option > ");
+        scanf("%1d", &option);
+
+        switch (option)
+        {
+        case 1:
+            menu1();
+            break;
+        case 2:
+            menu2();
+            break;
+        case 3:
+            menu3();
+            break;
+        case 4:
+            menu4();
+            break;
+        default:
+            printf("Please select a valid option!\n");
+            system("sleep 2");
+            break;
+        }
+    }
+}
+
+void menu1()
+{
+    system("clear");
+    int option = 0;
+
+    if (mode == 1)
+    {
+        printf("1 - pls chose a scheduling method\n");
+        printf("2 - Shortest-Job-First Scheduling\n");
+        printf("3 - Priority Scheduling\n");
+        printf("Option > ");
+        scanf("%1d", &option);
+
+        switch (option)
+        {
+        case 1:
+            method = NONE;
+            break;
+        case 2:
+            method = SJF;
+            break;
+        case 3:
+            method = PS;
+            break;
+        default:
+            printf("Please select a valid option\n");
+            system("sleep 1");
+            break;
+        }
+    }
+    else
+    {
+        printf("1 - pls chose a scheduling method\n");
+        printf("2 - First Come, First Served Scheduling\n");
+        printf("3 - Shortest-Job-First Scheduling\n");
+        printf("4 - Priority Scheduling\n");
+        printf("5 - Round-Robin Scheduling\n");
+        printf("Option > ");
+        scanf("%1d", &option);
+        switch (option)
+        {
+        case 1:
+            method = NONE;
+            break;
+        case 2:
+            method = FCFS;
+            break;
+        case 3:
+            method = SJF;
+            break;
+        case 4:
+            method = PS;
+            break;
+        case 5:
+            method = RR;
+            tq_menu();
+            break;
+        default:
+            printf("Please select a valid option\n");
+            system("sleep 1");
+            break;
+        }
+    }
+}
+
+void menu2()
+{
+    system("clear");
+    int option = 0;
+    if (method == 0)
+    {
+        printf("(Scheduling Methods Menu would change based on your preemtive mode selection.)\n");
+        printf("Please! Next time when you are choosing preemtive mode, ");
+        printf("pls select the scheduling method first.\n");
+        printf("1 - OFF\n");
+        printf("2 - ON\n");
+        printf("Option > ");
+        scanf("%1d", &option);
+        switch (option)
+        {
+        case 1:
+            mode = OFF;
+            break;
+        case 2:
+            mode = ON;
+            break;
+        default:
+            printf("Please select a valid option\n");
+            system("sleep 1");
+            break;
+        }
+    }
+    else if (method == 2 || method == 3)
+    {
+        printf("1 - OFF\n");
+        printf("2 - ON\n");
+        printf("Option > ");
+        scanf("%1d", &option);
+        switch (option)
+        {
+        case 1:
+            mode = OFF;
+            break;
+        case 2:
+            mode = ON;
+            break;
+        default:
+            printf("Please select a valid option\n");
+            system("sleep 1");
+            break;
+        }
+    }
+    else
+    {
+        printf("Preemtive mode is not available for selected Scheduling Method\n");
+        system("sleep 1");
+    }
+}
